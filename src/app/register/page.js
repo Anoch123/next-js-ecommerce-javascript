@@ -4,6 +4,8 @@ import InputComponent from '@/components/FormElements/InputComponent';
 import { registrationFormControls } from '@/utils';
 import React, {useState} from 'react'
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { registerNewUser } from "@/services/register";
 
 const initialFormData = {
     name: "",
@@ -13,12 +15,37 @@ const initialFormData = {
 
 const Register = () => {
     const [formData, setFormData] = useState(initialFormData);
-    const [isRegistered, setIsRegistered] = useState(false);
 
     const router = useRouter();
 
-    const handleRegisterOnSubmit = () => {
+    function isFormValid() {
+        return formData &&
+        formData.name &&
+        formData.name.trim() !== "" &&
+        formData.email &&
+        formData.email.trim() !== "" &&
+        formData.password &&
+        formData.password.trim() !== ""
+        ? true
+        : false;
+    }
 
+    console.log(formData)
+
+    const handleRegisterOnSubmit = async () => {
+        const data = await registerNewUser(formData);
+
+        if (data.success) {
+            toast.success(data.message, {
+              position: toast.POSITION.TOP_RIGHT,
+            });
+            setFormData(initialFormData);
+        } else {
+            toast.error(data.message, {
+              position: toast.POSITION.TOP_RIGHT,
+            });
+            setFormData(initialFormData);
+        }
     }
 
   return (
@@ -34,6 +61,7 @@ const Register = () => {
                             {registrationFormControls.map((controlItem) =>
                                 controlItem.componentType === "input" ? (
                                     <InputComponent
+                                        key={controlItem.id}
                                         type={controlItem.type}
                                         placeholder={controlItem.placeholder}
                                         label={controlItem.label}
@@ -45,7 +73,8 @@ const Register = () => {
                                 ) : null
                             )}
                             <button className=" disabled:opacity-50 inline-flex w-full items-center justify-center bg-black px-6 py-4 text-lg text-white transition-all duration-200 ease-in-out focus:shadow font-medium uppercase tracking-wide"
-                                onClick={handleRegisterOnSubmit}>
+                                onClick={handleRegisterOnSubmit}
+                                disabled={!isFormValid()}>
                                 sign up
                             </button>
                             <div className="text-center">

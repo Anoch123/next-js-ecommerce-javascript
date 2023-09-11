@@ -18,7 +18,7 @@ export async function POST(req) {
     const { name, email, password } = await req.json();
 
     // validating the user data the schema of user modal
-    const { error } = schema.validate({ name, email, password, role });
+    const { error } = schema.validate({ name, email, password });
 
     if (error) {
         console.log(error);
