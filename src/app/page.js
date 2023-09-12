@@ -1,7 +1,13 @@
+'use client';
+
 import Navbar from '@/components/Navbar'
-import Image from 'next/image'
+import { GlobalContext } from '@/context';
+import { useContext } from 'react';
 
 export default function Home() {
+
+  const {isAuthUser} = useContext(GlobalContext);
+  console.log(isAuthUser)
   return (
     <>
       <Navbar />

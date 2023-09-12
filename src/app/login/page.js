@@ -2,8 +2,13 @@
 
 import InputComponent from '@/components/FormElements/InputComponent';
 import { loginFormControls } from '@/utils';
-import React, {useState} from 'react'
+import React, {useContext, useEffect, useState} from 'react'
 import { useRouter } from "next/navigation";
+import { login } from '@/services/login';
+import { toast, ToastContainer } from "react-toastify";
+import Cookies from 'js-cookie';
+import { GlobalContext } from '@/context';
+import ComponentLevelLoader from '@/components/Loader/componentlevel';
 
 const initialFormData = {
     email: "",
@@ -13,13 +18,58 @@ const initialFormData = {
 const Login = () => {
     const [formData, setFormData] = useState(initialFormData);
 
+    const {
+      isAuthUser,
+      setIsAuthUser,
+      user,
+      setUser,
+      componentLevelLoader,
+      setComponentLevelLoader
+    } = useContext(GlobalContext);
+
     const router = useRouter();
 
-    console.log(formData)
-
-    const handleLogin = () => {
-
+    function isFormValid() {
+        return formData &&
+        formData.email &&
+        formData.email.trim() !== "" &&
+        formData.password &&
+        formData.password.trim() !== ""
+        ? true
+        : false;
     }
+
+    const handleLogin = async () => {
+      setComponentLevelLoader({ loading: true, id: "" });
+      const res = await login(formData);
+
+      if (res.success) {
+        setIsAuthUser(true);
+        setUser(res?.finalData?.user);
+        setFormData(initialFormData);
+        Cookies.set("token", res?.finalData?.token);
+        localStorage.setItem("user", JSON.stringify(res?.finalData?.user));
+        setComponentLevelLoader({ loading: false, id: "" });
+      } else {
+        toast.error(res.message, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+        setIsAuthUser(false);
+        setComponentLevelLoader({ loading: false, id: "" });
+      }
+    }
+
+    console.log(isAuthUser, user);
+
+    useEffect(() => {
+      if (isAuthUser) {
+        if(user?.role == 'admin'){
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/");
+        }
+      }
+    }, [isAuthUser]);
 
   return (
     <div className='flex flex-col md:flex-row h-screen items-center'>
@@ -51,7 +101,6 @@ const Login = () => {
                             <InputComponent
                                 key={controlItem.id}
                                 type={controlItem.type}
-                                placeholder={controlItem.placeholder}
                                 label={controlItem.label}
                                 onChange={(event) =>{
                                     setFormData({...formData, [controlItem.id]: event.target.value})
@@ -61,12 +110,28 @@ const Login = () => {
                         ) : null
                     )}
 
-                    <button type="submit" className="mt-10 w-full text-white font-medium rounded-lg text-sm px-5 py-3 text-center bg-customButtonColorDark" onClick={handleLogin}>Sign In</button>
+                    <button type="submit" className="disabled:opacity-50 mt-10 w-full text-white font-medium rounded-lg text-sm px-5 py-3 text-center bg-customButtonColorDark" 
+                      onClick={handleLogin}
+                      disabled={!isFormValid()}>
+                        {
+                          componentLevelLoader && componentLevelLoader.loading ? (
+                            <ComponentLevelLoader
+                              text={'Loggin In'}
+                              color={'#fff'}
+                              loading={
+                                componentLevelLoader && componentLevelLoader.loading
+                              }
+                            />
+                          ) : 
+                          'Login'
+                        }
+                      </button>
 
                     <p className="text-sm font-light text-gray-500 dark:text-gray-400 mt-5">
                         Not a member of Ecommercyfy yet? <button className="font-medium text-primary-600 hover:underline hover:text-blue-600 hover:duration-300 dark:text-primary-500" onClick={() => router.push("/register")}> Sign Up here</button>
                     </p>
                 </div>
+                <ToastContainer />
             </div>
         </div>
     </div>
