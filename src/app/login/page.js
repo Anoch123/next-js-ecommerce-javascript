@@ -26,7 +26,7 @@ const Login = () => {
       <div className="bg-indigo-600 hidden lg:block w-full md:w-1/2 xl:w-2/5 h-screen">
         <div className="p-5">
           <h1 className="text-3xl font-bold leading-tight tracking-tight text-white md:text-4xl">
-            AestheticRipple
+            Ecomercyfy
           </h1>
         </div>
       </div>
