@@ -5,9 +5,20 @@ import Joi from "joi";
 import { NextResponse } from "next/server";
 
 const schema = Joi.object({
-    name: Joi.string().required(),
-    email: Joi.string().email().required(),
-    password: Joi.string().min(6).required()
+    name: Joi.string().required().messages({
+        'any.required': 'Name is required.',
+        'string.empty': 'Name cannot be empty.'
+    }),
+    email: Joi.string().email().required().messages({
+        'any.required': 'Email is required.',
+        'string.empty': 'Email cannot be empty.',
+        'string.email': 'Email must be a valid email address.'
+    }),
+    password: Joi.string().min(6).required().messages({
+        'any.required': 'Password is required.',
+        'string.empty': 'Password cannot be empty.',
+        'string.min': 'Password must be at least 6 characters long.'
+    })
 });
 
 export const dynamic = "force-dynamic";

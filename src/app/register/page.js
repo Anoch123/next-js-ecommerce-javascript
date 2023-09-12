@@ -4,7 +4,7 @@ import InputComponent from '@/components/FormElements/InputComponent';
 import { registrationFormControls } from '@/utils';
 import React, {useState} from 'react'
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { registerNewUser } from "@/services/register";
 
 const initialFormData = {
@@ -30,8 +30,6 @@ const Register = () => {
         : false;
     }
 
-    console.log(formData)
-
     const handleRegisterOnSubmit = async () => {
         const data = await registerNewUser(formData);
 
@@ -49,40 +47,53 @@ const Register = () => {
     }
 
   return (
-    <div className="bg-white relative">
-        <div className="flex flex-col items-center justify-between pt-0 pr-10 pb-0 pl-10 mt-8 mr-auto xl:px-5 lg:flex-row">
-            <div className="flex flex-col justify-center items-center w-full pr-10 pl-10 lg:flex-row">
-                <div className="w-full mt-10 mr-0 mb-0 ml-0 relative max-w-2xl lg:mt-0 lg:w-5/12">
-                    <div className="flex flex-col items-center justify-start pt-10 pr-10 pb-10 pl-10 bg-white shadow-2xl rounded-xl relative z-10">
-                        <p className="w-full text-4xl font-medium text-center font-serif">
-                            Sign up for an account
-                        </p>
-                        <div className="w-full mt-6 mr-0 mb-0 ml-0 relative space-y-8">
-                            {registrationFormControls.map((controlItem) =>
-                                controlItem.componentType === "input" ? (
-                                    <InputComponent
-                                        key={controlItem.id}
-                                        type={controlItem.type}
-                                        placeholder={controlItem.placeholder}
-                                        label={controlItem.label}
-                                        onChange={(event) =>{
-                                            setFormData({...formData, [controlItem.id]: event.target.value})
-                                        }}
-                                        value={formData[controlItem.id]}
-                                    />
-                                ) : null
-                            )}
-                            <button className=" disabled:opacity-50 inline-flex w-full items-center justify-center bg-black px-6 py-4 text-lg text-white transition-all duration-200 ease-in-out focus:shadow font-medium uppercase tracking-wide"
-                                onClick={handleRegisterOnSubmit}
-                                disabled={!isFormValid()}>
-                                sign up
-                            </button>
-                            <div className="text-center">
-                                <p>Already a User? <button className='text-blue-800' onClick={() => router.push("/login")}> Sign in here</button></p>
-                            </div>
-                        </div>
+    <div className='flex flex-col md:flex-row h-screen items-center'>
+        <div className="bg-indigo-600 hidden lg:block w-full md:w-1/2 xl:w-2/5 h-screen">
+            <div className="p-5">
+                <h1 className="text-3xl font-bold leading-tight tracking-tight text-white md:text-4xl">
+                    Ecomercyfy
+                </h1>
+            </div>
+        </div>
+        <div className="bg-white w-full md:max-w-md lg:max-w-full md:mx-auto md:w-1/2 xl:w-1/3 h-screen px-6 lg:px-16 xl:px-12 flex items-center justify-center">
+            <div className="w-full h-100">
+                <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl">
+                    Sign Up to Ecomercyfy
+                </h1>
+                <div className="mt-10">
+                    <button className="w-full text-white font-medium rounded-lg text-sm px-5 py-3 text-center bg-customButtonColorDark">
+                        Google Login
+                    </button>
+                </div>
+                <div className="my-4 flex items-center mt-8 before:mt-0.5 before:flex-1 before:border-t before:border-neutral-300 after:mt-0.5 after:flex-1 after:border-t after:border-neutral-300">
+                    <p className="mx-4 mb-0 text-center font-semibold ">
+                        Or
+                    </p>
+                </div>
+                <div className="w-full mt-6 mr-0 mb-0 ml-0 relative space-y-8">
+                    {registrationFormControls.map((controlItem) =>
+                        controlItem.componentType === "input" ? (
+                            <InputComponent
+                                key={controlItem.id}
+                                type={controlItem.type}
+                                label={controlItem.label}
+                                onChange={(event) =>{
+                                    setFormData({...formData, [controlItem.id]: event.target.value})
+                                }}
+                                value={formData[controlItem.id]}
+                            />
+                        ) : null
+                    )}
+                    <button className="disabled:opacity-50 w-full text-white font-medium rounded-lg text-sm px-5 py-3 text-center bg-customButtonColorDark"
+                        onClick={handleRegisterOnSubmit}
+                        disabled={!isFormValid()}>
+                        Sign Up
+                    </button>
+                    <div className="text-center">
+                        <p className='text-sm font-light text-gray-500 dark:text-gray-400 mt-5'>Already have an account? <button className="font-medium text-primary-600 hover:underline hover:text-blue-600 hover:duration-300 dark:text-primary-500" onClick={() => router.push("/login")}> Login here</button></p>
                     </div>
                 </div>
+                <ToastContainer />
             </div>
         </div>
     </div>
