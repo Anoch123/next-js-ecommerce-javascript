@@ -68,6 +68,15 @@ const Navbar = () => {
                                                 <li>
                                                     <a href="#" className="dropDown">Earnings</a>
                                                 </li>
+                                                {
+                                                    user?.role == 'admin' ? 
+                                                    (
+                                                        <li>
+                                                            <a href="/admin/dashboard" className="dropDown">Admin</a>
+                                                        </li>
+                                                    )
+                                                    : null
+                                                }
                                                 <li>
                                                     <a href="#" onClick={handleLogout} className="dropDown">Sign out</a>
                                                 </li>
@@ -75,11 +84,11 @@ const Navbar = () => {
                                         </div>
                                     </div>
                                 )}
+                                
                             </div>
                         </>
                     ) : (
                         <>
-                            
                             <div className='hidden xl:block'>
                                 <a href="/login" className="rounded xl:text-black text-white font-semibold p-3">Login</a>
                             </div>
@@ -120,17 +129,9 @@ const Navbar = () => {
                             </div>
                             <div className="py-6">
                                 {
-                                    isAuthUser ? (
-                                        <>
-                                            <div className=''>
-                                                <a href="/addWork" className="text-white font-semibold text-sm p-4 bg-customButtonColorDark rounded-lg">Add Work</a>
-                                            </div>  
-                                        </>
-                                    ) : (
-                                        <>
-                                            <a href="/login" className="text-black font-semibold">Log in</a>
-                                        </>
-                                    )
+                                    !isAuthUser ? (
+                                        <><a href="/login" className="text-black font-semibold">Log in</a></>
+                                    ) : null
                                 }
                             </div>
                         </div>

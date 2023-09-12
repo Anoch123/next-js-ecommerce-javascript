@@ -32,7 +32,6 @@ export async function POST(req) {
     const { error } = schema.validate({ name, email, password });
 
     if (error) {
-        console.log(error);
         return NextResponse.json({
           success: false,
           message: error.details[0].message,

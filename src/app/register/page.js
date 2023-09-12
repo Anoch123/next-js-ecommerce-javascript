@@ -5,9 +5,10 @@ import { registrationFormControls } from '@/utils';
 import ComponentLevelLoader from "@/components/Loader/componentlevel";
 import React, {useContext, useState} from 'react'
 import { useRouter } from "next/navigation";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { registerNewUser } from "@/services/register";
 import { GlobalContext } from '@/context';
+import Notification from '@/components/Notification';
 
 const initialFormData = {
     name: "",
@@ -111,7 +112,7 @@ const Register = () => {
                         <p className='text-sm font-light text-gray-500 dark:text-gray-400 mt-5'>Already have an account? <button className="font-medium text-primary-600 hover:underline hover:text-blue-600 hover:duration-300 dark:text-primary-500" onClick={() => router.push("/login")}> Login here</button></p>
                     </div>
                 </div>
-                <ToastContainer />
+                <Notification />
             </div>
         </div>
     </div>

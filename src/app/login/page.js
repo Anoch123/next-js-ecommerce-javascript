@@ -2,13 +2,14 @@
 
 import InputComponent from '@/components/FormElements/InputComponent';
 import { loginFormControls } from '@/utils';
-import React, {useContext, useEffect, useState} from 'react'
+import React, {useContext, useState} from 'react'
 import { useRouter } from "next/navigation";
 import { login } from '@/services/login';
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import Cookies from 'js-cookie';
 import { GlobalContext } from '@/context';
 import ComponentLevelLoader from '@/components/Loader/componentlevel';
+import Notification from '@/components/Notification';
 
 const initialFormData = {
     email: "",
@@ -19,7 +20,6 @@ const Login = () => {
     const [formData, setFormData] = useState(initialFormData);
 
     const {
-      isAuthUser,
       setIsAuthUser,
       user,
       setUser,
@@ -44,12 +44,16 @@ const Login = () => {
       const res = await login(formData);
 
       if (res.success) {
+
         setIsAuthUser(true);
         setUser(res?.finalData?.user);
         setFormData(initialFormData);
         Cookies.set("token", res?.finalData?.token);
         localStorage.setItem("user", JSON.stringify(res?.finalData?.user));
         setComponentLevelLoader({ loading: false, id: "" });
+
+        router.push("/");
+
       } else {
         toast.error(res.message, {
           position: toast.POSITION.TOP_RIGHT,
@@ -58,18 +62,6 @@ const Login = () => {
         setComponentLevelLoader({ loading: false, id: "" });
       }
     }
-
-    console.log(isAuthUser, user);
-
-    useEffect(() => {
-      if (isAuthUser) {
-        if(user?.role == 'admin'){
-          router.push("/admin/dashboard");
-        } else {
-          router.push("/");
-        }
-      }
-    }, [isAuthUser]);
 
   return (
     <div className='flex flex-col md:flex-row h-screen items-center'>
@@ -131,7 +123,7 @@ const Login = () => {
                         Not a member of Ecommercyfy yet? <button className="font-medium text-primary-600 hover:underline hover:text-blue-600 hover:duration-300 dark:text-primary-500" onClick={() => router.push("/register")}> Sign Up here</button>
                     </p>
                 </div>
-                <ToastContainer />
+                <Notification />
             </div>
         </div>
     </div>
