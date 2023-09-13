@@ -20,7 +20,7 @@ export const config = {
   matcher: [
     '/login',
     '/register',
-    '/admin/dashboard',
+    '/admin',
     '/profile'
   ],
 }
