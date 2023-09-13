@@ -21,6 +21,7 @@ export const config = {
     '/login',
     '/register',
     '/admin',
-    '/profile'
+    '/profile',
+    '/admin/manageProducts'
   ],
 }

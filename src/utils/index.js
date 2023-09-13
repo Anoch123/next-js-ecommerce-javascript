@@ -189,17 +189,17 @@
   ];
   
   export const firebaseConfig = {
-    apiKey: "API_KEY",
-    authDomain: "AUTH_DOMAIN",
-    projectId: "PROJECT_ID",
-    storageBucket: "STROAGE_BUCKET",
-    messagingSenderId: "MESSAGING_SENDER_ID",
-    appId: "APP_ID",
-    measurementId: "MEASUREMENT_ID",
+    apiKey: "AIzaSyDC9RV4PTSO8G-T7b-6UEXSp157xsdp7DU",
+    authDomain: "ecommercyfy.firebaseapp.com",
+    projectId: "ecommercyfy",
+    storageBucket: "ecommercyfy.appspot.com",
+    messagingSenderId: "66607214191",
+    appId: "1:66607214191:web:36a7a9a0e718ff2440679a",
+    measurementId: "G-EP7W1ZB8QQ"
   };
   
   export const firebaseStroageURL =
-    "YOUR_FIREBASE_STROAGE_URL";
+    "gs://ecommercyfy.appspot.com";
   
   export const addNewAddressFormControls = [
     {
