@@ -21,9 +21,9 @@ const AddNewProductSchema = Joi.object({
         'any.required': 'Category should be a string',
         'string.empty': 'Category is required',
     }),
-    sizes: Joi.array().required().messages({
+    sizes: Joi.array().min(1).required().messages({
         'any.required': 'Sizes should be an array',
-        'array.empty': 'Sizes are required',
+        'array.min': 'At least one size is required',
     }),
     deliveryInfo: Joi.string().required().messages({
         'any.required': 'Delivery information should be a string',
@@ -37,8 +37,8 @@ const AddNewProductSchema = Joi.object({
         'any.required': 'Price drop should be a number',
         'number.empty': 'Price drop information is required',
     }),
-    imageUrl: Joi.string().required().messages({
-        'any.required': 'Image URL should be a string',
+    imageUrl: Joi.array().required().messages({
+        'any.required': 'Image URL should be an array',
         'string.empty': 'Image URL is required',
     }),
 });
