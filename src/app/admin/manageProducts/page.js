@@ -289,18 +289,18 @@ const AddProducts = () => {
           </div>
           <div className="lg:block w-full md:w-1/2 xl:w-2/5">
               <div className="p-5">
-                <div className="flex flex-col items-start justify-start md:p-7 xl:p-7 p-5 bg-white rounded-xl relative">
+                <div className="flex flex-col items-start justify-start md:p-7 xl:p-7 p-5 bg-white rounded-xl relative overflow-x-auto">
                   <h1 className="text-1xl font-bold leading-tight tracking-tight md:text-1xl">
                       Edit Products
                   </h1>
                   <span className='text-gray-300 text-sm mt-1'>{dataTable.length} Product Records Found</span>
                   <div className='mt-10'>
                     <DataTable
-                        columns={columns}
-                        data={mappedData}
-                        pagination
-                        fixedHeader
-                        sortable
+                      columns={columns}
+                      data={mappedData}
+                      pagination
+                      fixedHeader
+                      sortable
                     />
                   </div>
                 </div>
