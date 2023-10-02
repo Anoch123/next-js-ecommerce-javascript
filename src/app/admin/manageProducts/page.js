@@ -10,17 +10,11 @@ import { AvailableSizes, adminAddProductformControls, firebaseConfig, firebaseSt
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { addNewProduct, getAllAdminProducts } from '@/services/product';
+import { addNewProduct, getAllAdminProducts, updateAProduct, deleteAProductImage } from '@/services/product';
 import ComponentLevelLoader from '@/components/Loader/componentlevel';
 import DataTable from 'react-data-table-component';
-
 import { initializeApp } from "firebase/app";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
+import { getDownloadURL, getStorage, ref, uploadBytesResumable, deleteObject } from "firebase/storage";
 import ProgressBar from '@/components/ProgressBar';
 import Sidebar from '@/components/Sidebar';
 
@@ -77,6 +71,8 @@ const AddProducts = () => {
   const [uploading, setUploading] = useState(false);
   const {componentLevelLoader,setComponentLevelLoader} = useContext(GlobalContext);
   const [dataTable, setData] = useState([]);
+  const [isActionType, setIsActionType] = useState('');
+  
 
   useEffect(() => {
     getAllProducts();
@@ -92,8 +88,6 @@ const AddProducts = () => {
         position: toast.POSITION.TOP_RIGHT,
       });
     }
-    
-    console.log(getAlladminsProduct.data)
   }
 
   const columns = [
@@ -112,12 +106,12 @@ const AddProducts = () => {
 			name: 'Actions',
 			cell: (row) => (
 			  <div className="flex">
-					<button className="flex items-center mr-2" onClick={() => handleEdit(row._id)}>
+					<button className="flex items-center mr-2" onClick={() => editData(row.allData)}>
 						<svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
 						</svg>
 					</button>
-					<button className="flex items-center" onClick={() => handleDelete(row._id)}>
+					<button className="flex items-center">
 						<svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
 						</svg>
@@ -132,16 +126,8 @@ const AddProducts = () => {
     name: row.name,
     price: row.price,
     onSale: row.onSale == 'no' ? 'NO' : 'YES',
-    _id: row._id,
+    allData: row
 	}));
-
-  const handleEdit = (id) => {
-    console.log(id)
-  }
-
-  const handleDelete = (id) => {
-    console.log(id)
-  }
 
   const handleTileClick = (getCurrentItem) => {
     let cpySizes = [...formData.sizes];
@@ -187,24 +173,74 @@ const AddProducts = () => {
 
   const handleAddProducts = async () => {
     setComponentLevelLoader({ loading: true, id: "" });
-    console.log(formData)
-    const response = await addNewProduct(formData)
+    if(isActionType === 'Update') {
+      const response = await updateAProduct(formData)
 
-    if (response.success) {
-      setComponentLevelLoader({ loading: false, id: "" });
-      toast.success(response.message, {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-
-      setFormData(initialFormData);
-      location.reload()
+      if (response.success) {
+        setComponentLevelLoader({ loading: false, id: "" });
+        toast.success(response.message, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+  
+        setFormData(initialFormData);
+        location.reload()
+      } else {
+        toast.error(response.message, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+        setComponentLevelLoader({ loading: false, id: "" });
+        setFormData(initialFormData);
+      }
     } else {
-      toast.error(response.message, {
+      const response = await addNewProduct(formData)
+
+      if (response.success) {
+        setComponentLevelLoader({ loading: false, id: "" });
+        toast.success(response.message, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+  
+        setFormData(initialFormData);
+        location.reload()
+      } else {
+        toast.error(response.message, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+        setComponentLevelLoader({ loading: false, id: "" });
+        setFormData(initialFormData);
+      }
+    }
+  }
+
+  const editData = (data) => {
+    setFormData(data)
+    setIsActionType('Update')
+  }
+
+  const handleDeleteImage = (filePath, index) => {
+    const storageRef = ref(storage, filePath);
+
+    deleteObject(storageRef).then(async () => {
+      const updatedFormData = { ...formData, imageUrl: [] };
+      const response = await deleteAProductImage(updatedFormData);
+
+      if (response.success) {
+        toast.success(response.message, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+  
+      } else {
+        toast.error(response.message, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+      }
+      
+    }).catch((error) => {
+      setComponentLevelLoader({ loading: false, id: "" });
+      toast.success(error, {
         position: toast.POSITION.TOP_RIGHT,
       });
-      setComponentLevelLoader({ loading: false, id: "" });
-      setFormData(initialFormData);
-    }
+    });
   }
 
   return (
@@ -225,14 +261,22 @@ const AddProducts = () => {
                     <input accept="image/*" max="1000000" type="file" onChange={handleImage} multiple/>
                   </div>
                   <div className="mt-4 flex flex-col md:flex-row gap-4">
-                    {formData.imageUrl.map((imageUrl, index) => (
+                  {formData.imageUrl.map((imageUrl, index) => (
+                    <div key={index} className="relative">
                       <img
-                        key={index}
                         src={imageUrl}
                         alt={`Selected Image ${index + 1}`}
                         className="max-w-[10%] h-auto mt-2 rounded"
                       />
-                    ))}
+                      <button
+                        className="absolute top-0 w-6 bg-red-500 text-white rounded-full"
+                        onClick={() => handleDeleteImage(imageUrl, index)}
+                      >
+                        x
+                      </button>
+                    </div>
+                  ))}
+
                     {uploading && (
                       <ProgressBar progress={uploadProgress} />
                     )}
@@ -276,13 +320,14 @@ const AddProducts = () => {
                   {
                     componentLevelLoader && componentLevelLoader.loading ? (
                       <ComponentLevelLoader
-                        text={'Adding Product'}
+                        text={isActionType === 'Update'? 'Updating Product' : 'Adding Product'}
                         color={'#fff'}
                         loading={
                           componentLevelLoader && componentLevelLoader.loading
                         }
                       />
                     ) : 
+                    isActionType === 'Update' ? 'Update Product':
                     'Add Product'
                   }
                   </button>
