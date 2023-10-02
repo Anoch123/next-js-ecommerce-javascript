@@ -3,7 +3,7 @@
 import InputComponent from '@/components/FormElements/InputComponent';
 import SelectComponent from '@/components/FormElements/SelectComponent';
 import TileComponent from '@/components/FormElements/TileComponent';
-import Navbar from '@/components/Admin/Navbar';
+import Navbar from '@/components/Navbar';
 import Notification from '@/components/Notification';
 import { GlobalContext } from '@/context';
 import { AvailableSizes, adminAddProductformControls, firebaseConfig, firebaseStroageURL } from '@/utils';
@@ -22,6 +22,7 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import ProgressBar from '@/components/ProgressBar';
+import Sidebar from '@/components/Sidebar';
 
 const initialFormData = {
   name: "",
@@ -208,10 +209,11 @@ const AddProducts = () => {
 
   return (
     <>
-    <Navbar/>
-      <div className='bg-gray-100'>
-        <div className='flex flex-col md:flex-row'>
-          <div className="lg:block w-full md:w-1/2 xl:w-3/5">
+      <div className="flex">
+      <Sidebar/>
+        <div className="h-[200vh] md:h-[120vh] lg:h-[120vh] flex-1 p-7 bg-gray-100">
+          <div className='flex flex-col md:flex-row'>
+            <div className="lg:block w-full md:w-1/2 xl:w-3/5">
               <div className="p-5">
                 <div className="flex flex-col items-start justify-start md:p-7 xl:p-7 p-5 bg-white rounded-xl relative">
                   <h1 className="text-1xl font-bold leading-tight tracking-tight md:text-1xl">
@@ -223,18 +225,18 @@ const AddProducts = () => {
                     <input accept="image/*" max="1000000" type="file" onChange={handleImage} multiple/>
                   </div>
                   <div className="mt-4 flex flex-col md:flex-row gap-4">
-                  {formData.imageUrl.map((imageUrl, index) => (
-                    <img
-                      key={index}
-                      src={imageUrl}
-                      alt={`Selected Image ${index + 1}`}
-                      className="max-w-[10%] h-auto mt-2 rounded"
-                    />
-                  ))}
-                  {uploading && (
-                    <ProgressBar progress={uploadProgress} />
-                  )}
-                </div>
+                    {formData.imageUrl.map((imageUrl, index) => (
+                      <img
+                        key={index}
+                        src={imageUrl}
+                        alt={`Selected Image ${index + 1}`}
+                        className="max-w-[10%] h-auto mt-2 rounded"
+                      />
+                    ))}
+                    {uploading && (
+                      <ProgressBar progress={uploadProgress} />
+                    )}
+                  </div>
                   <div className="flex gap-2 flex-col mt-10">
                     <label>Available sizes</label>
                     <TileComponent selected={formData.sizes} onClick={handleTileClick} data={AvailableSizes}/>
@@ -286,8 +288,8 @@ const AddProducts = () => {
                   </button>
                 </div>
               </div>
-          </div>
-          <div className="lg:block w-full md:w-1/2 xl:w-2/5">
+            </div>
+            <div className="lg:block w-full md:w-1/2 xl:w-2/5">
               <div className="p-5">
                 <div className="flex flex-col items-start justify-start md:p-7 xl:p-7 p-5 bg-white rounded-xl relative overflow-x-auto">
                   <h1 className="text-1xl font-bold leading-tight tracking-tight md:text-1xl">
@@ -305,8 +307,9 @@ const AddProducts = () => {
                   </div>
                 </div>
               </div>
+            </div>
+            <Notification/>
           </div>
-          <Notification/>
         </div>
       </div>
     </>

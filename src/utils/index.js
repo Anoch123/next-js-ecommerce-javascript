@@ -238,3 +238,14 @@
       componentType: "input",
     },
   ];
+
+  export const SideBarMenus = [
+      { title: "Dashboard", src: "Chart_fill", href:"/admin" },
+      { title: "Manage Products", src: "Chat", href:"/admin/manageProducts" },
+      { title: "Accounts", src: "User", gap: true },
+      { title: "Schedule ", src: "Calendar" },
+      { title: "Search", src: "Search" },
+      { title: "Analytics", src: "Chart" },
+      { title: "Files ", src: "Folder", gap: true },
+      { title: "Setting", src: "Setting" },
+  ];
