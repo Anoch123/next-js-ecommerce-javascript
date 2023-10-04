@@ -1,26 +1,18 @@
-"use client";
 
-export default function ProgressBar({ progress }) {
+export default function ProgressBar({ progress, fileName }) {
   return (
-    <div className="relative pt-1">
-    <div className="flex mb-2 items-center justify-between">
-      <div>
-        <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-teal-600 bg-teal-200">
-          Uploading
+    <div className="rounded-md bg-[#F5F7FB] py-4 px-8">
+      <div className="flex items-center justify-between">
+        <span className="truncate pr-3 text-base font-medium text-[#07074D]">
+          {fileName} Uploaded {progress}%
         </span>
       </div>
-      <div className="text-right">
-        <span className="text-xs font-semibold inline-block text-teal-600">
-          {progress}%
-        </span>
+      <div className="relative mt-5 h-[6px] w-full rounded-lg bg-[#E2E5EF]">
+        <div
+          style={{ width: `${progress}%` }}
+          className="absolute left-0 right-0 h-full rounded-lg bg-[#6A64F1]"
+        ></div>
       </div>
     </div>
-    <div className="flex h-2 mb-4 overflow-hidden text-xs bg-teal-200 rounded">
-      <div
-        style={{ width: `${progress}%` }}
-        className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-teal-500"
-      ></div>
-    </div>
-  </div>
   );
 }

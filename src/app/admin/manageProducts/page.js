@@ -3,20 +3,21 @@
 import InputComponent from '@/components/FormElements/InputComponent';
 import SelectComponent from '@/components/FormElements/SelectComponent';
 import TileComponent from '@/components/FormElements/TileComponent';
-import Navbar from '@/components/Navbar';
 import Notification from '@/components/Notification';
+import ProgressBar from '@/components/ProgressBar';
+import FileSelector from '@/components/FileSelector';
 import { GlobalContext } from '@/context';
 import { AvailableSizes, adminAddProductformControls, firebaseConfig, firebaseStroageURL } from '@/utils';
-import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { addNewProduct, getAllAdminProducts, updateAProduct, deleteAProductImage } from '@/services/product';
 import ComponentLevelLoader from '@/components/Loader/componentlevel';
 import DataTable from 'react-data-table-component';
 import { initializeApp } from "firebase/app";
-import { getDownloadURL, getStorage, ref, uploadBytesResumable, deleteObject } from "firebase/storage";
-import ProgressBar from '@/components/ProgressBar';
-import Sidebar from '@/components/Sidebar';
+import { getStorage, ref, deleteObject } from "firebase/storage";
+import { helperForUPloadingImageToFirebase } from '@/helpers/helperForUPloadingImageToFirebase';
+import InputAreaComponent from '@/components/FormElements/InputAreaComponent';
+
 
 const initialFormData = {
   name: "",
@@ -33,43 +34,10 @@ const initialFormData = {
 const app = initializeApp(firebaseConfig);
 const storage = getStorage(app, firebaseStroageURL);
 
-const createUniqueFileName = (getFile) => {
-  const timeStamp = Date.now();
-  const randomStringValue = Math.random().toString(36).substring(2, 12);
-
-  return `${getFile.name}-${timeStamp}-${randomStringValue}`;
-};
-
-async function helperForUPloadingImageToFirebase(file, progressCallback) {
-  const getFileName = createUniqueFileName(file);
-  const storageReference = ref(storage, `ecommerce/${getFileName}`);
-  const uploadImage = uploadBytesResumable(storageReference, file);
-
-  return new Promise((resolve, reject) => {
-    uploadImage.on(
-      "state_changed",
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        progressCallback(progress);
-      },
-      (error) => {
-        console.log(error);
-        reject(error);
-      },
-      () => {
-        getDownloadURL(uploadImage.snapshot.ref)
-          .then((downloadUrl) => resolve(downloadUrl))
-          .catch((error) => reject(error));
-      }
-    );
-  });
-}
-
 const AddProducts = () => {
   const [formData, setFormData] = useState(initialFormData);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
-  const {componentLevelLoader,setComponentLevelLoader} = useContext(GlobalContext);
+  const {componentLevelLoader,setComponentLevelLoader,uploadProgress, setUploadProgress,uploadFileName, setuploadFileName} = useContext(GlobalContext);
   const [dataTable, setData] = useState([]);
   const [isActionType, setIsActionType] = useState('');
   
@@ -148,27 +116,36 @@ const AddProducts = () => {
   const handleImage = async (event) => {
     const files = event.target.files;
     const imageUrls = [];
-
-    setUploading(true);
-
-    for (const file of files) {
-      const imageUrl = await helperForUPloadingImageToFirebase(file, (progress) => {
-        setUploadProgress(progress);
+    
+    if (files.length > 6) {
+      toast.error("You can only select a maximum of 6 image files.", {
+        position: toast.POSITION.TOP_RIGHT,
       });
-      if (imageUrl !== "") {
-        imageUrls.push(imageUrl);
+      event.target.files = null;
+      return;
+    } else {
+      setUploading(true);
+
+      for (const file of files) {
+        const imageUrl = await helperForUPloadingImageToFirebase(file, (progress) => {
+          setUploadProgress(progress);
+          setuploadFileName(file.name);
+        });
+        if (imageUrl !== "") {
+          imageUrls.push(imageUrl);
+        }
       }
-    }
 
-    if (imageUrls.length > 0) {
-      setFormData({
-        ...formData,
-        imageUrl: [...formData.imageUrl, ...imageUrls],
-      });
-    }
+      if (imageUrls.length > 0) {
+        setFormData({
+          ...formData,
+          imageUrl: [...formData.imageUrl, ...imageUrls],
+        });
+      }
 
-    setUploading(false);
-    setUploadProgress(0);
+      setUploading(false);
+      setUploadProgress(0);
+    }
   }
 
   const handleAddProducts = async () => {
@@ -218,18 +195,26 @@ const AddProducts = () => {
   }
 
   const handleDeleteImage = (filePath, index) => {
+    setComponentLevelLoader({ loading: true, id: "" });
     const storageRef = ref(storage, filePath);
 
-    deleteObject(storageRef).then(async () => {
-      const updatedFormData = { ...formData, imageUrl: [] };
+    deleteObject(storageRef)
+    .then(async () => {
+
+      const updatedImageUrlArray = [...formData.imageUrl];
+      updatedImageUrlArray.splice(index, 1);
+
+      const updatedFormData = { ...formData, imageUrl: updatedImageUrlArray };
       const response = await deleteAProductImage(updatedFormData);
 
       if (response.success) {
+        setComponentLevelLoader({ loading: false, id: "" });
         toast.success(response.message, {
           position: toast.POSITION.TOP_RIGHT,
         });
-  
+        location.reload()
       } else {
+        setComponentLevelLoader({ loading: false, id: "" });
         toast.error(response.message, {
           position: toast.POSITION.TOP_RIGHT,
         });
@@ -245,28 +230,31 @@ const AddProducts = () => {
 
   return (
     <>
-      <div className="flex">
-      <Sidebar/>
-        <div className="h-[200vh] md:h-[120vh] lg:h-[120vh] flex-1 p-7 bg-gray-100">
-          <div className='flex flex-col md:flex-row'>
-            <div className="lg:block w-full md:w-1/2 xl:w-3/5">
-              <div className="p-5">
-                <div className="flex flex-col items-start justify-start md:p-7 xl:p-7 p-5 bg-white rounded-xl relative">
-                  <h1 className="text-1xl font-bold leading-tight tracking-tight md:text-1xl">
-                      Manage Products
-                  </h1>
-                  <span className='text-gray-300 text-sm mt-1'>Dashboard / Products / Manage Products</span>
+      <div className='h-[350vh] md:h-[150vh] lg:h-[150vh] bg-gray-100'>
+        <div className='flex flex-col md:flex-row'>
+          <div className="lg:block w-full md:w-1/2 xl:w-3/5">
+            <div className="p-2 md:p-5 lg:p-5">
+              <div className="flex flex-col items-start justify-start md:p-7 xl:p-7 p-5 bg-white rounded-xl relative">
+                <h1 className="text-1xl font-bold leading-tight tracking-tight md:text-1xl">
+                    Manage Products
+                </h1>
+                <span className='text-gray-300 text-sm mt-1'>Dashboard / Products / Manage Products</span>
 
-                  <div className='mt-10'>
-                    <input accept="image/*" max="1000000" type="file" onChange={handleImage} multiple/>
+                <div className="mt-10">
+                    <FileSelector
+                      acceptType="image/*"
+                      maxLimit={1000000}
+                      handleImage={handleImage}
+                    />
                   </div>
+                  
                   <div className="mt-4 flex flex-col md:flex-row gap-4">
                   {formData.imageUrl.map((imageUrl, index) => (
                     <div key={index} className="relative">
                       <img
                         src={imageUrl}
                         alt={`Selected Image ${index + 1}`}
-                        className="max-w-[10%] h-auto mt-2 rounded"
+                        className="md:max-w-[80%] lg:max-w-[80%] max-w-[30%] h-auto mt-2 rounded"
                       />
                       <button
                         className="absolute top-0 w-6 bg-red-500 text-white rounded-full"
@@ -276,9 +264,10 @@ const AddProducts = () => {
                       </button>
                     </div>
                   ))}
-
+                  </div>
+                  <div>
                     {uploading && (
-                      <ProgressBar progress={uploadProgress} />
+                      <div className='mt-10'><ProgressBar fileName={uploadFileName} progress={uploadProgress} /></div>
                     )}
                   </div>
                   <div className="flex gap-2 flex-col mt-10">
@@ -313,6 +302,21 @@ const AddProducts = () => {
                             });
                           }}
                         />
+                      ) : controlItem.componentType === "inputArea" ? (
+                        <InputAreaComponent
+                          key={controlItem.id}
+                          type={controlItem.type}
+                          label={controlItem.label}
+                          value={formData[controlItem.id]}
+                          row={20}
+                          colums={10}
+                          onChange={(event) => {
+                            setFormData({
+                              ...formData,
+                              [controlItem.id]: event.target.value,
+                            });
+                          }}
+                        />
                       ) : null
                     )}
                   </div>
@@ -331,30 +335,29 @@ const AddProducts = () => {
                     'Add Product'
                   }
                   </button>
-                </div>
               </div>
             </div>
-            <div className="lg:block w-full md:w-1/2 xl:w-2/5">
-              <div className="p-5">
-                <div className="flex flex-col items-start justify-start md:p-7 xl:p-7 p-5 bg-white rounded-xl relative overflow-x-auto">
-                  <h1 className="text-1xl font-bold leading-tight tracking-tight md:text-1xl">
-                      Edit Products
-                  </h1>
-                  <span className='text-gray-300 text-sm mt-1'>{dataTable.length} Product Records Found</span>
-                  <div className='mt-10'>
-                    <DataTable
-                      columns={columns}
-                      data={mappedData}
-                      pagination
-                      fixedHeader
-                      sortable
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <Notification/>
           </div>
+          <div className="lg:block w-full md:w-1/2 xl:w-2/5">
+            <div className="p-2 md:p-5 lg:p-5">
+              <div className="flex flex-col items-start justify-start md:p-7 xl:p-7 p-5 bg-white rounded-xl relative overflow-x-auto">
+                <h1 className="text-1xl font-bold leading-tight tracking-tight md:text-1xl">
+                    Edit Products
+                </h1>
+                <span className='text-gray-300 text-sm mt-1'>{dataTable.length} Product Records Found</span>
+                <div className='mt-10'>
+                  <DataTable
+                    columns={columns}
+                    data={mappedData}
+                    pagination
+                    fixedHeader
+                    sortable
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <Notification/>
         </div>
       </div>
     </>

@@ -15,6 +15,8 @@ export default function GlobalState({ children }) {
         loading: false,
         id: "",
     });
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadFileName, setuploadFileName] = useState('');
 
     useEffect(() => {
         if(Cookies.get('token') !== undefined){
@@ -37,7 +39,11 @@ export default function GlobalState({ children }) {
             componentLevelLoader, 
             setComponentLevelLoader,
             pageLevelLoader, 
-            setPageLevelLoader
+            setPageLevelLoader,
+            uploadProgress, 
+            setUploadProgress,
+            uploadFileName, 
+            setuploadFileName
         }}>
             {children}
         </GlobalContext.Provider>

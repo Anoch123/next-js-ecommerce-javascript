@@ -117,7 +117,7 @@
       type: "text",
       placeholder: "Enter description",
       label: "Description",
-      componentType: "input",
+      componentType: "inputArea",
     },
     {
       id: "category",
